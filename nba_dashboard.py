@@ -40,11 +40,14 @@ HEADER_STYLE = {
     'borderBottom': f'3px solid {NBA_COLORS["primary"]}'
 }
 
+# Custom styles for dropdowns
 DROPDOWN_STYLE = {
-    'width': '50%',
-    'margin': 'auto',
-    'marginBottom': '20px',
-    'color': NBA_COLORS['text']
+    'backgroundColor': NBA_COLORS['card_bg'],
+    'color': NBA_COLORS['text'],
+    'border': f'1px solid {NBA_COLORS["primary"]}',
+    'borderRadius': '5px',
+    'option': {'backgroundColor': NBA_COLORS['card_bg']},
+    'selected': {'backgroundColor': NBA_COLORS['primary']},
 }
 
 # Ensure correct data types
@@ -99,7 +102,12 @@ app.layout = html.Div([
                 options=player_options,
                 multi=True,
                 placeholder="Select up to 3 players",
-                style=DROPDOWN_STYLE
+                style={
+                    'width': '100%',
+                    'marginBottom': '15px',
+                    'color': '#000000',  # Black text for dropdown items
+                    'backgroundColor': '#ffffff',  # White background
+                }
             ),
         ]),
         dcc.Graph(id='radar-chart', style={'height': '500px'})
@@ -113,7 +121,12 @@ app.layout = html.Div([
                 id='player-dropdown',
                 options=player_options,
                 placeholder="Select a player",
-                style={'width': '100%', 'marginBottom': '15px'}
+                style={
+                    'width': '100%',
+                    'marginBottom': '15px',
+                    'color': '#000000',
+                    'backgroundColor': '#ffffff',
+                }
             ),
             dcc.Graph(id='line-chart', style={'height': '500px'})
         ], style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', **CARD_STYLE}),
@@ -124,7 +137,12 @@ app.layout = html.Div([
                 id='career-player-dropdown',
                 options=player_options,
                 placeholder="Select a player",
-                style={'width': '100%', 'marginBottom': '15px'}
+                style={
+                    'width': '100%',
+                    'marginBottom': '15px',
+                    'color': '#000000',
+                    'backgroundColor': '#ffffff',
+                }
             ),
             dcc.Graph(id='career-arc-timeline', style={'height': '500px'})
         ], style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', **CARD_STYLE}),
@@ -161,7 +179,12 @@ app.layout = html.Div([
                     {'label': '👥 Average Assists', 'value': 'AST'}
                 ],
                 value='count',
-                style={'width': '100%', 'marginBottom': '15px'}
+                style={
+                    'width': '100%',
+                    'marginBottom': '15px',
+                    'color': '#000000',
+                    'backgroundColor': '#ffffff',
+                }
             ),
             dcc.Graph(id='college-pipeline-chart', style={'height': '500px'})
         ], style={'width': '49%', 'display': 'inline-block', 'verticalAlign': 'top', **CARD_STYLE}),
@@ -177,19 +200,33 @@ app.layout = html.Div([
                         {'label': '👥 Assists', 'value': 'AST'}
                     ],
                     value='PTS',
-                    style={'width': '32%', 'marginRight': '2%'}
+                    style={
+                        'width': '32%',
+                        'marginRight': '2%',
+                        'color': '#000000',
+                        'backgroundColor': '#ffffff',
+                    }
                 ),
                 dcc.Dropdown(
                     id='position-decade-dropdown',
                     options=decade_options,
                     placeholder="Select decade",
-                    style={'width': '32%', 'marginRight': '2%'}
+                    style={
+                        'width': '32%',
+                        'marginRight': '2%',
+                        'color': '#000000',
+                        'backgroundColor': '#ffffff',
+                    }
                 ),
                 dcc.Dropdown(
                     id='position-team-dropdown',
                     options=[{'label': team, 'value': team} for team in sorted(df['TEAM_NAME'].unique())],
                     placeholder="Select team",
-                    style={'width': '32%'}
+                    style={
+                        'width': '32%',
+                        'color': '#000000',
+                        'backgroundColor': '#ffffff',
+                    }
                 )
             ], style={'display': 'flex', 'marginBottom': '15px'}),
             dcc.Graph(id='position-distribution-chart', style={'height': '500px'})
