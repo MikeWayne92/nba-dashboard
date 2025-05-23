@@ -8,22 +8,22 @@ services:
       ls -la
       chmod +x build.sh
       ./build.sh
-      echo "Verifying data file in deploy directory:"
+      echo "Verifying final deployment structure:"
       ls -la deploy/
-      cat deploy/PlayerIndex_nba_stats.csv | head -n 5
+      ls -la deploy/data/
     startCommand: |
-      echo "Starting application in $(pwd)"
+      echo "Starting application..."
       cd deploy
-      echo "Deployment directory contents:"
+      echo "Application directory contents:"
       ls -la
-      echo "First few lines of CSV file:"
-      head -n 5 PlayerIndex_nba_stats.csv
+      echo "Data directory contents:"
+      ls -la data/
       echo "Starting Gunicorn server..."
-      gunicorn nba_dashboard:server -b 0.0.0.0:$PORT --log-level debug
+      PYTHONPATH=/opt/render/project/src/deploy gunicorn nba_dashboard:server -b 0.0.0.0:$PORT --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: PYTHONUNBUFFERED
         value: "true"
-      - key: DATA_DIR
-        value: "/opt/render/project/src/deploy" 
+      - key: PYTHONPATH
+        value: /opt/render/project/src/deploy 

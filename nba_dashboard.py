@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output
 import numpy as np
 import os
+import sys
 
 # Initialize the Dash app with proper server configuration
 app = Dash(__name__)
@@ -11,44 +12,48 @@ server = app.server  # Expose server variable for gunicorn
 
 # Load data
 try:
-    # Get data directory from environment variable or use current directory
-    data_dir = os.getenv('DATA_DIR', os.getcwd())
-    print(f"Looking for data in: {data_dir}")
+    # Print current working directory and its contents
+    print(f"Current working directory: {os.getcwd()}")
+    print("Directory contents:")
+    print(os.listdir())
     
-    # Try multiple possible locations for the CSV file
-    possible_paths = [
-        os.path.join(data_dir, 'PlayerIndex_nba_stats.csv'),
-        os.path.join(os.getcwd(), 'PlayerIndex_nba_stats.csv'),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PlayerIndex_nba_stats.csv'),
-        './PlayerIndex_nba_stats.csv',
-        '../PlayerIndex_nba_stats.csv'
+    # Define possible data directories
+    data_dirs = [
+        os.path.join(os.getcwd(), 'data'),
+        os.path.join(os.getcwd(), 'deploy', 'data'),
+        os.path.dirname(os.path.abspath(__file__)),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data'),
+        os.getcwd()
     ]
     
-    print("Checking these locations:")
-    for path in possible_paths:
-        print(f"- {path} (exists: {os.path.exists(path)})")
+    # Print Python path
+    print("Python path:")
+    print(sys.path)
     
+    # Try to find the CSV file
     csv_path = None
-    for path in possible_paths:
-        if os.path.exists(path):
-            csv_path = path
-            print(f"Found CSV file at: {path}")
-            # Verify file is readable and has content
-            with open(path, 'r') as f:
-                first_line = f.readline()
-                print(f"First line of CSV: {first_line.strip()}")
+    for data_dir in data_dirs:
+        possible_path = os.path.join(data_dir, 'PlayerIndex_nba_stats.csv')
+        print(f"Checking {possible_path}")
+        if os.path.exists(possible_path):
+            csv_path = possible_path
+            print(f"Found CSV file at: {csv_path}")
             break
     
     if csv_path is None:
-        raise FileNotFoundError(f"Could not find PlayerIndex_nba_stats.csv in any of these locations: {', '.join(possible_paths)}")
-        
+        raise FileNotFoundError(f"Could not find PlayerIndex_nba_stats.csv in any of these locations: {', '.join(data_dirs)}")
+    
+    # Try to read the file
+    print(f"Attempting to read CSV from: {csv_path}")
     df = pd.read_csv(csv_path)
-    print(f"Successfully loaded data from {csv_path}")
-    print(f"DataFrame shape: {df.shape}")
-    print(f"DataFrame columns: {df.columns.tolist()}")
+    print(f"Successfully loaded data with shape: {df.shape}")
+    print(f"Columns: {df.columns.tolist()}")
     
 except Exception as e:
     print(f"Error loading data: {str(e)}")
+    print(f"Stack trace:", file=sys.stderr)
+    import traceback
+    traceback.print_exc()
     # Provide a minimal dataset with all required columns
     df = pd.DataFrame({
         'PLAYER_FIRST_NAME': ['Sample'],

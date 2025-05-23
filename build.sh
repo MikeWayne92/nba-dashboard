@@ -9,41 +9,41 @@ ls -la
 
 # Create necessary directories
 echo "Setting up deployment environment..."
-mkdir -p ./deploy
+mkdir -p ./deploy/data
 
-# Verify CSV file exists and show its size
-echo "Checking CSV file:"
-if [ -f "PlayerIndex_nba_stats.csv" ]; then
-    echo "CSV file exists with size:"
-    ls -lh PlayerIndex_nba_stats.csv
-    echo "First few lines of CSV:"
-    head -n 5 PlayerIndex_nba_stats.csv
+# Verify data directory exists
+echo "Checking data directory:"
+if [ -d "data" ]; then
+    echo "Data directory exists with contents:"
+    ls -la data/
 else
-    echo "ERROR: PlayerIndex_nba_stats.csv not found!"
-    exit 1
+    echo "WARNING: Local data directory not found!"
 fi
 
 # Copy necessary files
 echo "Copying application files..."
 cp nba_dashboard.py ./deploy/
-cp PlayerIndex_nba_stats.csv ./deploy/
 cp requirements.txt ./deploy/
 
-# Verify files were copied
-echo "Verifying copied files..."
-ls -la ./deploy/
-
-# Verify CSV file in deploy directory
-echo "Verifying CSV file in deploy directory:"
-if [ -f "./deploy/PlayerIndex_nba_stats.csv" ]; then
-    echo "CSV file successfully copied with size:"
-    ls -lh ./deploy/PlayerIndex_nba_stats.csv
-    echo "First few lines of copied CSV:"
-    head -n 5 ./deploy/PlayerIndex_nba_stats.csv
+# Copy data directory
+echo "Copying data files..."
+if [ -f "data/PlayerIndex_nba_stats.csv" ]; then
+    cp -r data ./deploy/
+    echo "Copied data directory to deploy"
+elif [ -f "PlayerIndex_nba_stats.csv" ]; then
+    cp PlayerIndex_nba_stats.csv ./deploy/data/
+    echo "Copied CSV file to deploy/data"
 else
-    echo "ERROR: CSV file not copied to deploy directory!"
+    echo "ERROR: Could not find PlayerIndex_nba_stats.csv!"
     exit 1
 fi
+
+# Verify deployment structure
+echo "Verifying deployment structure:"
+echo "Deploy directory contents:"
+ls -la ./deploy/
+echo "Deploy data directory contents:"
+ls -la ./deploy/data/
 
 # Print success message
 echo "Build completed successfully!"
