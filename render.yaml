@@ -2,8 +2,19 @@ services:
   - type: web
     name: nba-dashboard
     env: python
-    buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: cd deploy && gunicorn nba_dashboard:server -b 0.0.0.0:$PORT
+    buildCommand: |
+      echo "Starting build process..."
+      chmod +x build.sh
+      ./build.sh
+      echo "Build process completed."
+    startCommand: |
+      echo "Starting application..."
+      cd deploy
+      ls -la
+      python -c "import os; print('Current directory:', os.getcwd()); print('Directory contents:', os.listdir('.'))"
+      gunicorn nba_dashboard:server -b 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0 
+        value: 3.11.0
+      - key: PYTHONUNBUFFERED
+        value: "true" 

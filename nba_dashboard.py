@@ -11,31 +11,42 @@ server = app.server  # Expose server variable for gunicorn
 
 # Load data
 try:
-    # Get the directory where the script is located
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_path = os.path.join(script_dir, 'PlayerIndex_nba_stats.csv')
+    # Try multiple possible locations for the CSV file
+    possible_paths = [
+        os.path.join(os.getcwd(), 'PlayerIndex_nba_stats.csv'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PlayerIndex_nba_stats.csv'),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'deploy', 'PlayerIndex_nba_stats.csv'),
+        './PlayerIndex_nba_stats.csv',
+        '../PlayerIndex_nba_stats.csv'
+    ]
     
-    # Try to read the CSV file
-    if not os.path.exists(csv_path):
-        # If not found in script directory, try current working directory
-        csv_path = os.path.join(os.getcwd(), 'PlayerIndex_nba_stats.csv')
+    csv_path = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            csv_path = path
+            break
     
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"Could not find PlayerIndex_nba_stats.csv in {script_dir} or {os.getcwd()}")
+    if csv_path is None:
+        raise FileNotFoundError(f"Could not find PlayerIndex_nba_stats.csv in any of these locations: {', '.join(possible_paths)}")
         
     df = pd.read_csv(csv_path)
     print(f"Successfully loaded data from {csv_path}")
 except Exception as e:
     print(f"Error loading data: {str(e)}")
-    # Provide a minimal dataset to prevent app crash
+    # Provide a minimal dataset with all required columns
     df = pd.DataFrame({
-        'PLAYER_FIRST_NAME': ['Data'],
-        'PLAYER_LAST_NAME': ['Unavailable'],
+        'PLAYER_FIRST_NAME': ['Sample'],
+        'PLAYER_LAST_NAME': ['Player'],
         'FROM_YEAR': [2000],
+        'TO_YEAR': [2001],
+        'TEAM_NAME': ['Sample Team'],
+        'POSITION': ['G'],
+        'COLLEGE': ['Sample College'],
         'PTS': [0],
         'REB': [0],
         'AST': [0]
     })
+    print("Using fallback dataset for development/testing")
 
 # Color schemes
 NBA_COLORS = {
