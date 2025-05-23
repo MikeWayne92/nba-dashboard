@@ -5,6 +5,10 @@ from dash import Dash, dcc, html, Input, Output
 import numpy as np
 import os
 
+# Initialize the Dash app with proper server configuration
+app = Dash(__name__)
+server = app.server  # Expose server variable for gunicorn
+
 # Load data
 try:
     # Get the directory where the script is located
@@ -94,9 +98,6 @@ min_year = df['FROM_YEAR'].min()
 max_year = df['FROM_YEAR'].max()
 decade_options = [{'label': f"{decade}s", 'value': decade} 
                  for decade in range(min_year // 10 * 10, (max_year // 10 * 10) + 10, 10)]
-
-# Initialize the Dash app
-app = Dash(__name__)
 
 # Layout of the dashboard
 app.layout = html.Div([
@@ -675,4 +676,6 @@ def update_team_legacy(selected_metric):
         return fig
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    # Get port from environment variable or default to 8050
+    port = int(os.environ.get('PORT', 8050))
+    app.run(host='0.0.0.0', port=port, debug=False) 
