@@ -11,19 +11,32 @@ server = app.server  # Expose server variable for gunicorn
 
 # Load data
 try:
+    # Get data directory from environment variable or use current directory
+    data_dir = os.getenv('DATA_DIR', os.getcwd())
+    print(f"Looking for data in: {data_dir}")
+    
     # Try multiple possible locations for the CSV file
     possible_paths = [
+        os.path.join(data_dir, 'PlayerIndex_nba_stats.csv'),
         os.path.join(os.getcwd(), 'PlayerIndex_nba_stats.csv'),
         os.path.join(os.path.dirname(os.path.abspath(__file__)), 'PlayerIndex_nba_stats.csv'),
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'deploy', 'PlayerIndex_nba_stats.csv'),
         './PlayerIndex_nba_stats.csv',
         '../PlayerIndex_nba_stats.csv'
     ]
+    
+    print("Checking these locations:")
+    for path in possible_paths:
+        print(f"- {path} (exists: {os.path.exists(path)})")
     
     csv_path = None
     for path in possible_paths:
         if os.path.exists(path):
             csv_path = path
+            print(f"Found CSV file at: {path}")
+            # Verify file is readable and has content
+            with open(path, 'r') as f:
+                first_line = f.readline()
+                print(f"First line of CSV: {first_line.strip()}")
             break
     
     if csv_path is None:
@@ -31,6 +44,9 @@ try:
         
     df = pd.read_csv(csv_path)
     print(f"Successfully loaded data from {csv_path}")
+    print(f"DataFrame shape: {df.shape}")
+    print(f"DataFrame columns: {df.columns.tolist()}")
+    
 except Exception as e:
     print(f"Error loading data: {str(e)}")
     # Provide a minimal dataset with all required columns

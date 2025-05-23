@@ -4,17 +4,26 @@ services:
     env: python
     buildCommand: |
       echo "Starting build process..."
+      echo "Current directory contents before build:"
+      ls -la
       chmod +x build.sh
       ./build.sh
-      echo "Build process completed."
+      echo "Verifying data file in deploy directory:"
+      ls -la deploy/
+      cat deploy/PlayerIndex_nba_stats.csv | head -n 5
     startCommand: |
-      echo "Starting application..."
+      echo "Starting application in $(pwd)"
       cd deploy
+      echo "Deployment directory contents:"
       ls -la
-      python -c "import os; print('Current directory:', os.getcwd()); print('Directory contents:', os.listdir('.'))"
-      gunicorn nba_dashboard:server -b 0.0.0.0:$PORT
+      echo "First few lines of CSV file:"
+      head -n 5 PlayerIndex_nba_stats.csv
+      echo "Starting Gunicorn server..."
+      gunicorn nba_dashboard:server -b 0.0.0.0:$PORT --log-level debug
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: PYTHONUNBUFFERED
-        value: "true" 
+        value: "true"
+      - key: DATA_DIR
+        value: "/opt/render/project/src/deploy" 
