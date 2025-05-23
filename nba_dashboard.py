@@ -5,6 +5,14 @@ from dash import Dash, dcc, html, Input, Output
 import numpy as np
 import os
 import sys
+from datetime import datetime
+
+# Initialize logging
+debug_logs = []
+def log_debug(message):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    debug_logs.append(f"[{timestamp}] {message}")
+    print(f"[{timestamp}] {message}")
 
 # Initialize the Dash app with proper server configuration
 app = Dash(__name__)
@@ -12,10 +20,9 @@ server = app.server  # Expose server variable for gunicorn
 
 # Load data
 try:
-    # Print current working directory and its contents
-    print(f"Current working directory: {os.getcwd()}")
-    print("Directory contents:")
-    print(os.listdir())
+    # Log current environment
+    log_debug(f"Current working directory: {os.getcwd()}")
+    log_debug(f"Directory contents: {os.listdir()}")
     
     # Define possible data directories
     data_dirs = [
@@ -26,34 +33,32 @@ try:
         os.getcwd()
     ]
     
-    # Print Python path
-    print("Python path:")
-    print(sys.path)
+    # Log Python path
+    log_debug(f"Python path: {sys.path}")
     
     # Try to find the CSV file
     csv_path = None
     for data_dir in data_dirs:
         possible_path = os.path.join(data_dir, 'PlayerIndex_nba_stats.csv')
-        print(f"Checking {possible_path}")
+        log_debug(f"Checking {possible_path}")
         if os.path.exists(possible_path):
             csv_path = possible_path
-            print(f"Found CSV file at: {csv_path}")
+            log_debug(f"Found CSV file at: {csv_path}")
             break
     
     if csv_path is None:
         raise FileNotFoundError(f"Could not find PlayerIndex_nba_stats.csv in any of these locations: {', '.join(data_dirs)}")
     
     # Try to read the file
-    print(f"Attempting to read CSV from: {csv_path}")
+    log_debug(f"Attempting to read CSV from: {csv_path}")
     df = pd.read_csv(csv_path)
-    print(f"Successfully loaded data with shape: {df.shape}")
-    print(f"Columns: {df.columns.tolist()}")
+    log_debug(f"Successfully loaded data with shape: {df.shape}")
+    log_debug(f"Columns: {df.columns.tolist()}")
     
 except Exception as e:
-    print(f"Error loading data: {str(e)}")
-    print(f"Stack trace:", file=sys.stderr)
+    log_debug(f"Error loading data: {str(e)}")
     import traceback
-    traceback.print_exc()
+    log_debug(f"Stack trace: {traceback.format_exc()}")
     # Provide a minimal dataset with all required columns
     df = pd.DataFrame({
         'PLAYER_FIRST_NAME': ['Sample'],
@@ -67,7 +72,7 @@ except Exception as e:
         'REB': [0],
         'AST': [0]
     })
-    print("Using fallback dataset for development/testing")
+    log_debug("Using fallback dataset for development/testing")
 
 # Color schemes
 NBA_COLORS = {
@@ -149,6 +154,31 @@ app.layout = html.Div([
                 })
     ]),
     
+    # Debug Information Section (New)
+    html.Div([
+        html.H2("Debug Information", style=HEADER_STYLE),
+        html.Pre(
+            id='debug-info',
+            children='\n'.join(debug_logs),
+            style={
+                'whiteSpace': 'pre-wrap',
+                'wordBreak': 'break-word',
+                'backgroundColor': '#000',
+                'color': '#0f0',
+                'padding': '10px',
+                'borderRadius': '5px',
+                'maxHeight': '300px',
+                'overflow': 'auto',
+                'fontFamily': 'monospace'
+            }
+        ),
+        dcc.Interval(
+            id='debug-interval',
+            interval=5000,  # Update every 5 seconds
+            n_intervals=0
+        )
+    ], style=CARD_STYLE),
+
     # Player Comparison Radar Chart
     html.Div([
         html.H2("Player Comparison", style=HEADER_STYLE),
@@ -706,6 +736,14 @@ def update_team_legacy(selected_metric):
             showarrow=False
         )
         return fig
+
+# Add callback to update debug information
+@app.callback(
+    Output('debug-info', 'children'),
+    [Input('debug-interval', 'n_intervals')]
+)
+def update_debug_info(n):
+    return '\n'.join(debug_logs)
 
 if __name__ == '__main__':
     # Get port from environment variable or default to 8050
