@@ -3,10 +3,35 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output
 import numpy as np
+import os
 
 # Load data
-csv_path = 'PlayerIndex_nba_stats.csv'
-df = pd.read_csv(csv_path)
+try:
+    # Get the directory where the script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, 'PlayerIndex_nba_stats.csv')
+    
+    # Try to read the CSV file
+    if not os.path.exists(csv_path):
+        # If not found in script directory, try current working directory
+        csv_path = os.path.join(os.getcwd(), 'PlayerIndex_nba_stats.csv')
+    
+    if not os.path.exists(csv_path):
+        raise FileNotFoundError(f"Could not find PlayerIndex_nba_stats.csv in {script_dir} or {os.getcwd()}")
+        
+    df = pd.read_csv(csv_path)
+    print(f"Successfully loaded data from {csv_path}")
+except Exception as e:
+    print(f"Error loading data: {str(e)}")
+    # Provide a minimal dataset to prevent app crash
+    df = pd.DataFrame({
+        'PLAYER_FIRST_NAME': ['Data'],
+        'PLAYER_LAST_NAME': ['Unavailable'],
+        'FROM_YEAR': [2000],
+        'PTS': [0],
+        'REB': [0],
+        'AST': [0]
+    })
 
 # Color schemes
 NBA_COLORS = {

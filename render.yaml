@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: nba-dashboard
+    env: python
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: cd deploy && gunicorn nba_dashboard:server -b 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0 
