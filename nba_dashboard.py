@@ -8,10 +8,8 @@ import sys
 from datetime import datetime
 
 # Initialize logging
-debug_logs = []
 def log_debug(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    debug_logs.append(f"[{timestamp}] {message}")
     print(f"[{timestamp}] {message}")
 
 # Initialize the Dash app with proper server configuration
@@ -154,31 +152,6 @@ app.layout = html.Div([
                 })
     ]),
     
-    # Debug Information Section (New)
-    html.Div([
-        html.H2("Debug Information", style=HEADER_STYLE),
-        html.Pre(
-            id='debug-info',
-            children='\n'.join(debug_logs),
-            style={
-                'whiteSpace': 'pre-wrap',
-                'wordBreak': 'break-word',
-                'backgroundColor': '#000',
-                'color': '#0f0',
-                'padding': '10px',
-                'borderRadius': '5px',
-                'maxHeight': '300px',
-                'overflow': 'auto',
-                'fontFamily': 'monospace'
-            }
-        ),
-        dcc.Interval(
-            id='debug-interval',
-            interval=5000,  # Update every 5 seconds
-            n_intervals=0
-        )
-    ], style=CARD_STYLE),
-
     # Player Comparison Radar Chart
     html.Div([
         html.H2("Player Comparison", style=HEADER_STYLE),
@@ -736,14 +709,6 @@ def update_team_legacy(selected_metric):
             showarrow=False
         )
         return fig
-
-# Add callback to update debug information
-@app.callback(
-    Output('debug-info', 'children'),
-    [Input('debug-interval', 'n_intervals')]
-)
-def update_debug_info(n):
-    return '\n'.join(debug_logs)
 
 if __name__ == '__main__':
     # Get port from environment variable or default to 8050
